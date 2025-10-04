@@ -1,0 +1,27 @@
+[
+    {
+        "id": "4914ad11-88a4-4f86-ab7b-313e3ff40899",
+        "nombre": "Mesa",
+        "categoria": "Living",
+        "precio": 1,
+        "stock": 11,
+        "descripcion": "Es una mesa increible."
+    },
+    {
+        "id": "dbb5c6dd-0b8d-4253-96b2-213e69a051e0",
+        "nombre": "Tablet",
+        "categoria": "Electrónica",
+        "precio": 300000,
+        "stock": 100,
+        "descripcion": "Ideal para diseñadores gráficos.",
+        "test": 123
+    },
+    {
+        "id": "fcb2319c-c61d-471b-a9aa-3a59efd7e09f",
+        "nombre": "Tablet",
+        "precio": 300000,
+        "stock": 100,
+        "descripcion": "Ideal para diseñadores gráficos.",
+        "categoria": "Electrónica"
+    }
+]

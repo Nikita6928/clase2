@@ -11,14 +11,15 @@ server.use(cors())
 
 //helper/utilidad
 const products = JSON.parse(fs.readFileSync("./products.json"))
-const writeDb = (data) => fs.writeFileSync("./product.json", JSON.stringify(data))
+const writeDb = data => fs.writeFileSync("./products.json", JSON.stringify(data))
 
-
+//Status
 server.get("/", (request, response) => {
     response.json({ status: "false" })
 
 })
 
+//add product
 server.get("/products", (request, response) => {
 
     response.json(products)
