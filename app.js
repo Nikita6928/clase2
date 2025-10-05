@@ -19,11 +19,14 @@ server.get("/", (request, response) => {
 
 })
 
-//add product
+//add product.  Método get
 server.get("/products", (request, response) => {
 
     response.json(products)
-
+})
+//Método post
+server.post("/products", (request, response) => {
+    const body = request.body
 })
 
 server.listen(1111, () => {
