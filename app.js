@@ -1,4 +1,4 @@
-/* /users -> GET () /users -> POST (Agregar), /users/id: -> PATCH (Actualizar), /users/id: -> DELETE (Borrar)
+/* /users -> GET (Obtener información) /users -> POST (Agregar información), /users/id: -> PATCH (Actualizar info), /users/id: -> DELETE (Borrar info)
 peticion fetch/users/3ej con el método PATCH(Actualizar), petición fetch/users/3 con el método DELETE (Borrar)*/
 
 import express from 'express'
@@ -7,6 +7,7 @@ import cors from "cors"
 
 const server = express()
 server.use(cors())
+server.use(express.json())
 
 
 //helper/utilidad
@@ -27,6 +28,9 @@ server.get("/products", (request, response) => {
 //Método post
 server.post("/products", (request, response) => {
     const body = request.body
+    console.log(body)
+
+    response.json({ data: "agregando productos!" })
 })
 
 server.listen(1111, () => {
