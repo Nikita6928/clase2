@@ -27,9 +27,16 @@ server.get("/products", (request, response) => {
 })
 
 
-//add product.  
+//add product. post/agregar  
 server.post("/products", (request, response) => {
     const body = request.body
+
+    const { nombre, precio, stock, descripcion, categoria } = body
+
+    if (!nombre || !precio || !stock || !descripcion || !categoria) {
+        return response.status(400)
+
+    }
 
     const newProduct = { id: crypto.randomUUID(), ...body }
     products.push(newProduct)
@@ -38,23 +45,37 @@ server.post("/products", (request, response) => {
     response.json({ data: "agregando productos!" })
 })
 
-//Método patch
+//Método patch/modificar
 server.patch("/products/:id", (request, response) => {
     const body = request.body
     const id = request.params.id
 
     const index = products.findIndex(product => product.id === id)
 
-    products[index] = { ...products[index], ...body }
+    if (index === -1) {
+        return response.status(404).json({ status: "No se encuentra el recurso" })
+    }
 
-    console.log(products[index])
+    products[index] = { ...products[index], ...body }
+    writeDb(products)
+
+    response.json(products[index])
 
     response.json({ status: "Actualizando un producto!" })
 
-
-
-
 })
+
+//Método delete/borrar
+server.delete("/products/:id", (request, response) => {
+    const id = request.params.id
+
+    const newProducts = products.filter((product) => product.id !== id)
+    writeDb(newProducts)
+
+    response.json({ status: "Producto borrado con éxito", id })
+})
+
+
 
 server.listen(1111, () => {
     console.log(`Server conenctado en http://localhost:1111`)
