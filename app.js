@@ -1,6 +1,7 @@
 /* /users -> GET (Obtener información) /users -> POST (Agregar información), /users/id: -> PATCH (Actualizar info), /users/id: -> DELETE (Borrar info)
 peticion fetch/users/3ej con el método PATCH(Actualizar), petición fetch/users/3 con el método DELETE (Borrar)*/
-
+import index from 'index.html'
+import home from 'views/home.html'
 import express from 'express'
 import fs from 'node:fs'
 import cors from "cors"
