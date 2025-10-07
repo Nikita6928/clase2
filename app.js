@@ -33,12 +33,25 @@ server.post("/products", (request, response) => {
 
     const { nombre, precio, stock, descripcion, categoria } = body
 
+    //Valido todo lo que necesito 
     if (!nombre || !precio || !stock || !descripcion || !categoria) {
-        return response.status(400)
+        return response.status(400).json({ status: "Data invalida, intentando nuevamente" })
 
     }
 
-    const newProduct = { id: crypto.randomUUID(), ...body }
+    const newProduct = {
+        id: crypto.randomUUID(),
+        nombre,
+        precio,
+        stock,
+        descripcion,
+        categoria
+    }
+
+    //Validar si existe o no el producto
+    //Si existe el producto 400
+    //Si no existe, lo agrego
+
     products.push(newProduct)
     writeDb(products)
 
