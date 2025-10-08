@@ -23,14 +23,14 @@ server.get("/", (request, response) => {
 
 })
 
-//Página 17 express-direccionamiento.  Voy a ver si puedo ver los productos en el home
+/*Página 17 express-direccionamiento.  Voy a ver si puedo ver los productos en el home
 const express = require("express");
 const router = express.Router();
-//Get home page
+/Get home page
 router.get('/', function (req, res, next) {
-    res.render('index', { title: "Express" });
-});
-module.exports = router;
+    res.render('index', { title: "Express" });  No funcionó
+});*
+module.exports = router;*/
 
 // get product
 server.get("/products", (request, response) => {
