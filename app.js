@@ -1,7 +1,7 @@
 /* /users -> GET (Obtener información) /users -> POST (Agregar información), /users/id: -> PATCH (Actualizar info), /users/id: -> DELETE (Borrar info)
 peticion fetch/users/3ej con el método PATCH(Actualizar), petición fetch/users/3 con el método DELETE (Borrar)*/
-import index from 'index.html'
-import home from 'views/home.html'
+//import index from 'index.html'
+//import home from 'views/home.html'
 import express from 'express'
 import fs from 'node:fs'
 import cors from "cors"
@@ -11,15 +11,26 @@ server.use(cors())
 server.use(express.json())
 
 
-//helper/utilidad
+//helper/util
 const products = JSON.parse(fs.readFileSync("./products.json"))
 const writeDb = data => fs.writeFileSync("./products.json", JSON.stringify(data))
+
+
 
 //Status
 server.get("/", (request, response) => {
     response.json({ status: false })
 
 })
+
+//Página 17 express-direccionamiento.  Voy a ver si puedo ver los productos en el home
+const express = require("express");
+const router = express.Router();
+//Get home page
+router.get('/', function (req, res, next) {
+    res.render('index', { title: "Express" });
+});
+module.exports = router;
 
 // get product
 server.get("/products", (request, response) => {
@@ -54,6 +65,7 @@ server.post("/products", (request, response) => {
     //Si no existe, lo agrego
 
     products.push(newProduct)
+    console.log(products)
     writeDb(products)
 
     response.json({ data: "agregando productos!" })
@@ -84,6 +96,7 @@ server.delete("/products/:id", (request, response) => {
     const id = request.params.id
 
     const newProducts = products.filter((product) => product.id !== id)
+    console.log(newProducts)
     writeDb(newProducts)
 
     response.json({ status: "Producto borrado con éxito", id })
