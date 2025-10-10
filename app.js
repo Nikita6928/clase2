@@ -5,6 +5,23 @@ peticion fetch/users/3ej con el método PATCH(Actualizar), petición fetch/users
 import express from 'express'
 import fs from 'node:fs'
 import cors from "cors"
+import { leer } from "./db/connection.js"
+
+//endpoint
+app.get("/", (req, res) => {
+    const vistproducts = leer();
+    res.json(vistproducts);
+})
+
+//servir el index.html
+app.use(express.static("public")); //Carpeta donde está el index
+
+const PORT = 3000;
+app.listen(PORT, () => {
+    console.log(`Servidor escuchando en http://localhost:$(PORT)`);
+});
+
+
 
 const server = express()
 server.use(cors())
@@ -105,5 +122,5 @@ server.delete("/products/:id", (request, response) => {
 
 
 server.listen(1111, () => {
-    console.log(`Server conenctado en http://localhost:1111`)
+    console.log(`Server conectado en http://localhost:1111`)
 })
