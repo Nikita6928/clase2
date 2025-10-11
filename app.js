@@ -17,7 +17,8 @@ server.use(express.json())
 
 //helper/util
 const products = JSON.parse(fs.readFileSync("./products.json"))
-const writeDb = data => fs.writeFileSync("./products.json", JSON.stringify(data))
+const users = JSON.parse(fs.readFileSync("./users.json"))
+const writeDb = (path, data) => fs.writeFileSync(path, JSON.stringify(data))
 
 
 
@@ -28,10 +29,30 @@ server.get("/", (request, response) => {
 })
 
 const authMiddleware = (request, response, next) => {
-    let analisis = false
-    console.log("Comenzando el análisis")
+    let analisis = true
+
+    if (!analisis) {
+        return response.status(401).json({ message: "No cuentas con los permisos para ingresar" })//El código 401 en http significa desautorizado/No autorizado
+    }
+
     next()
 }
+
+//endpoint para registrar un usuario
+server.post("/auth/register", (request, response) => {
+    const body = request.body
+
+    const nuevoUsuario = {
+        id: crypto.randomUUID(),
+        email: body.email,
+        password: body.password
+    }
+    users.push(nuevoUsuario)
+    writeDb("./users.json", users)
+
+    response.json({ status: "Agregando usuario" })
+})
+
 
 
 // get product---
@@ -68,7 +89,7 @@ server.post("/products", (request, response) => {
 
     products.push(newProduct)
     console.log(products)
-    writeDb(products)
+    writeDb("./products.json", products)
 
     response.json({ data: "agregando productos!" })
 })
@@ -85,7 +106,7 @@ server.patch("/products/:id", (request, response) => {
     }
 
     products[index] = { ...products[index], ...body }
-    writeDb(products)
+    writeDb("./products.json", products)
 
     response.json(products[index])
 
@@ -98,8 +119,7 @@ server.delete("/products/:id", (request, response) => {
     const id = request.params.id
 
     const newProducts = products.filter((product) => product.id !== id)
-    console.log(newProducts)
-    writeDb(newProducts)
+    writeDb("./products.json", newProducts)
 
     response.json({ status: "Producto borrado con éxito", id })
 })
