@@ -5,21 +5,8 @@ peticion fetch/users/3ej con el método PATCH(Actualizar), petición fetch/users
 import express from 'express'
 import fs from 'node:fs'
 import cors from "cors"
-import { leer } from "./db/connection.js"
 
-//endpoint
-app.get("/", (req, res) => {
-    const vistproducts = leer();
-    res.json(vistproducts);
-})
 
-//servir el index.html
-app.use(express.static("public")); //Carpeta donde está el index
-
-const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en http://localhost:$(PORT)`);
-});
 
 
 
@@ -34,29 +21,27 @@ const writeDb = data => fs.writeFileSync("./products.json", JSON.stringify(data)
 
 
 
-//Status
+//Status----
 server.get("/", (request, response) => {
     response.json({ status: false })
 
 })
 
-/*Página 17 express-direccionamiento.  Voy a ver si puedo ver los productos en el home
-const express = require("express");
-const router = express.Router();
-/Get home page
-router.get('/', function (req, res, next) {
-    res.render('index', { title: "Express" });  No funcionó
-});*
-module.exports = router;*/
+const authMiddleware = (request, response, next) => {
+    let analisis = false
+    console.log("Comenzando el análisis")
+    next()
+}
 
-// get product
-server.get("/products", (request, response) => {
+
+// get product---
+server.get("/products", authMiddleware, (request, response) => {
     response.json(products)
 
 })
 
 
-//add product. post/agregar  
+//add product. post/agregar--  
 server.post("/products", (request, response) => {
     const body = request.body
 
