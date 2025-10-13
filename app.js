@@ -5,6 +5,7 @@ peticion fetch/users/3ej con el método PATCH(Actualizar), petición fetch/users
 import express from 'express'
 import fs from 'node:fs'
 import cors from "cors"
+import bcrypt from 'bcryptjs'
 
 
 
@@ -39,14 +40,25 @@ const authMiddleware = (request, response, next) => {
 }
 
 //endpoint para registrar un usuario
-server.post("/auth/register", (request, response) => {
+server.post("/auth/register", async (request, response) => {
     const body = request.body
+
+    const usuario = users.find(user => user.email === body.email)
+
+    if (usuario) {
+        return response.status(400).json({ message: "El usuario ya existe en nuestra base de datos" })
+    }
+
+
+    const hash = await bcrypt.hash(body.password, 10)
 
     const nuevoUsuario = {
         id: crypto.randomUUID(),
         email: body.email,
-        password: body.password
+        password: hash
     }
+
+
     users.push(nuevoUsuario)
     writeDb("./users.json", users)
 
@@ -63,7 +75,7 @@ server.get("/products", authMiddleware, (request, response) => {
 
 
 //add product. post/agregar--  
-server.post("/products", (request, response) => {
+server.post("/products", authMiddleware, (request, response) => {
     const body = request.body
 
     const { nombre, precio, stock, descripcion, categoria } = body
@@ -110,7 +122,7 @@ server.patch("/products/:id", (request, response) => {
 
     response.json(products[index])
 
-    response.json({ status: "Actualizando un producto!" })
+    // response.json({ status: "Actualizando un producto!" })
 
 })
 
