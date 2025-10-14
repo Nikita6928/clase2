@@ -6,7 +6,7 @@ import express from 'express'
 import fs from 'node:fs'
 import cors from "cors"
 import bcrypt from 'bcryptjs'
-
+import jwt from 'jsonwebtoken'
 
 
 
@@ -30,6 +30,7 @@ server.get("/", (request, response) => {
 })
 
 const authMiddleware = (request, response, next) => {
+    //Validar el token -> Validar la sesión
     let analisis = true
 
     if (!analisis) {
@@ -40,6 +41,7 @@ const authMiddleware = (request, response, next) => {
 }
 
 //endpoint para registrar un usuario
+//Agregar un usuario en la db
 server.post("/auth/register", async (request, response) => {
     const body = request.body
 
@@ -65,6 +67,31 @@ server.post("/auth/register", async (request, response) => {
     response.json({ status: "Agregando usuario" })
 })
 
+//Creación de sesión -> una sesión me permite ingresar a los datos por cierto tiempo
+server.post("/auth/login", async (request, response) => {
+    const body = request.body
+    const usuario = users.find(user => user.email === body.email)
+
+    if (!usuario) {
+        return response.status(401).json({ status: "Usuario no encontrado, credenciales inválidas" })
+    }
+
+    const passwordValidada = await bcrypt.compare(body.password, usuario.password)
+    if (!passwordValidada) {
+        return response.status(401).json({ status: "Usuario no encontrado, credenciales inválidas" })
+    }
+
+
+    //CREAR UNA SESIÓN!!!
+
+    //1 - payload -> Información del usuario loggeado
+    //2 - clave secreta
+    //3 - Objeto de configuración
+    const token = jwt.sign({ id: usuario.id, email: usuario.email }, "CLAVE_SECRETA", { expiresIn: "1h" })
+
+    response.json({ token })
+
+})
 
 
 // get product---
