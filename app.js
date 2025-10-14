@@ -31,12 +31,21 @@ server.get("/", (request, response) => {
 
 const authMiddleware = (request, response, next) => {
     //Validar el token -> Validar la sesión
-    let analisis = true
+    /*let analisis = true
 
     if (!analisis) {
         return response.status(401).json({ message: "No cuentas con los permisos para ingresar" })//El código 401 en http significa desautorizado/No autorizado
+    }*/
+    const token = request.headers.autorization
+    // console.log(token, "<- Hay token!!!") 
+    //copiar en el token en el valor del get/products del postman, luego de agregar autorization(key)
+    //Bueno, como no tengo autorización, porque el token tenía validéz por una hora y ya pasaron varias horas, tengo que generarlo nuevamente.
+    if (!token) {
+        response.json({ status: "Se necesita el permiso" })
     }
 
+    const decoded = jwt.verify(token, "CLAVE_SECRETA")
+    console.log(decoded)
     next()
 }
 
@@ -134,7 +143,7 @@ server.post("/products", authMiddleware, (request, response) => {
 })
 
 //Método patch/modificar
-server.patch("/products/:id", (request, response) => {
+server.patch("/products/:id", authMiddleware, (request, response) => {
     const body = request.body
     const id = request.params.id
 
@@ -154,7 +163,7 @@ server.patch("/products/:id", (request, response) => {
 })
 
 //Método delete/borrar
-server.delete("/products/:id", (request, response) => {
+server.delete("/products/:id", authMiddleware, (request, response) => {
     const id = request.params.id
 
     const newProducts = products.filter((product) => product.id !== id)
