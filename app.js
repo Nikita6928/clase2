@@ -7,6 +7,7 @@ import fs from 'node:fs'
 import cors from "cors"
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import mongoose from 'mongoose'
 
 
 
@@ -28,6 +29,24 @@ server.get("/", (request, response) => {
     response.json({ status: false })
 
 })
+
+const connectDb = async () => {
+    await mongoose.connect("mongodb://localhost:27017/curso-node")
+    console.log("Conectado a MongoDb con éxito")
+}
+
+//Los datos que voy a agregar, están basados en estas validaciones
+const productSchema = new mongoose.Schema({
+    nombre: { type: String, required: true },
+    precio: { type: Number, default: true },
+    stock: { type: Number, required: true },
+    descripcion: { type: String },
+    categoria: { type: String, required: true }
+})
+//Modelo es un objeto que nos da acceso a los métodos de mongoDb
+//findByIdUpdate()Es una función que existe en mongodb para encontrar un producto por su id y modificar
+const product = mongoose.model("product", productSchema)
+
 
 const authMiddleware = (request, response, next) => {
     //Validar el token -> Validar la sesión
@@ -104,14 +123,15 @@ server.post("/auth/login", async (request, response) => {
 
 
 // get product---
-server.get("/products", authMiddleware, (request, response) => {
-    response.json(products)
+server.get("/products", async (request, response) => {
+    const listOfProducts = await Product.find()
+    response.json(listOfProducts)
 
 })
 
 
 //add product. post/agregar--  
-server.post("/products", authMiddleware, (request, response) => {
+server.post("/products", authMiddleware, async (request, response) => {
     const body = request.body
 
     const { nombre, precio, stock, descripcion, categoria } = body
@@ -122,22 +142,21 @@ server.post("/products", authMiddleware, (request, response) => {
 
     }
 
-    const newProduct = {
-        id: crypto.randomUUID(),
+    const newProduct = new Product({
+
         nombre,
         precio,
         stock,
         descripcion,
         categoria
-    }
+    })
 
     //Validar si existe o no el producto
     //Si existe el producto 400
     //Si no existe, lo agrego
 
-    products.push(newProduct)
-    console.log(products)
-    writeDb("./products.json", products)
+
+    await newProduct.save()
 
     response.json({ data: "agregando productos!" })
 })
@@ -175,5 +194,7 @@ server.delete("/products/:id", authMiddleware, (request, response) => {
 
 
 server.listen(1111, () => {
+    connectDb()
     console.log(`Server conectado en http://localhost:1111`)
 })
+
