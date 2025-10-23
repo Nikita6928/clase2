@@ -8,7 +8,7 @@ import cors from "cors"
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
-import { useDeferredValue } from 'react'
+
 
 
 
@@ -183,10 +183,14 @@ server.patch("/products/:id", async (request, response) => {
 })
 
 //Método delete/borrar
-server.delete("/products/:id", authMiddleware, async (request, response) => {
+server.delete("/products/:id", async (request, response) => {
     const id = request.params.id
 
     const deletedProduct = await Product.findByIdAndDelete(id)
+
+    if (!deletedProduct) {
+        return response.status(404).json({ error: "No se encuentra el producto para borrar" })
+    }
 
     response.json({ deletedProduct })
 })
