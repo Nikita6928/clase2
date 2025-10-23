@@ -8,6 +8,7 @@ import cors from "cors"
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import mongoose from 'mongoose'
+import { useDeferredValue } from 'react'
 
 
 
@@ -43,7 +44,10 @@ const productSchema = new mongoose.Schema({
     stock: { type: Number, required: true },
     descripcion: { type: String },
     categoria: { type: String, required: true }
+}, {
+    versionKey: false
 })
+
 //Modelo es un objeto que nos da acceso a los métodos de mongoDb
 //findByIdUpdate()Es una función que existe en mongodb para encontrar un producto por su id y modificar
 const Product = mongoose.model("Product", productSchema)
@@ -163,33 +167,28 @@ server.post("/products", async (request, response) => {
 })
 
 //Método patch/modificar
-server.patch("/products/:id", authMiddleware, (request, response) => {
+server.patch("/products/:id", async (request, response) => {
     const body = request.body
     const id = request.params.id
 
-    const index = products.findIndex(product => product.id === id)
+    const updateProduct = await Product.findByIdAndUpdate(id, body, { new: true })
 
-    if (index === -1) {
-        return response.status(404).json({ status: "No se encuentra el recurso" })
+    if (!updateProduct) {
+        return response.status(404).json({ error: "Producto no encontrado" })
     }
-
-    products[index] = { ...products[index], ...body }
-    writeDb("./products.json", products)
-
-    response.json(products[index])
+    response.json(updateProduct)
 
     // response.json({ status: "Actualizando un producto!" })
 
 })
 
 //Método delete/borrar
-server.delete("/products/:id", authMiddleware, (request, response) => {
+server.delete("/products/:id", authMiddleware, async (request, response) => {
     const id = request.params.id
 
-    const newProducts = products.filter((product) => product.id !== id)
-    writeDb("./products.json", newProducts)
+    const deletedProduct = await Product.findByIdAndDelete(id)
 
-    response.json({ status: "Producto borrado con éxito", id })
+    response.json({ deletedProduct })
 })
 
 
