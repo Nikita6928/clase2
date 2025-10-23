@@ -35,17 +35,18 @@ const connectDb = async () => {
     console.log("Conectado a MongoDb con éxito")
 }
 
+//Creación de esquema de Mongodb
 //Los datos que voy a agregar, están basados en estas validaciones
 const productSchema = new mongoose.Schema({
     nombre: { type: String, required: true },
-    precio: { type: Number, default: true },
+    precio: { type: Number, default: 0 },
     stock: { type: Number, required: true },
     descripcion: { type: String },
     categoria: { type: String, required: true }
 })
 //Modelo es un objeto que nos da acceso a los métodos de mongoDb
 //findByIdUpdate()Es una función que existe en mongodb para encontrar un producto por su id y modificar
-const product = mongoose.model("product", productSchema)
+const Product = mongoose.model("Product", productSchema)
 
 
 const authMiddleware = (request, response, next) => {
@@ -64,7 +65,7 @@ const authMiddleware = (request, response, next) => {
     }
 
     const decoded = jwt.verify(token, "CLAVE_SECRETA")
-    console.log(decoded)
+
     next()
 }
 
@@ -131,7 +132,7 @@ server.get("/products", async (request, response) => {
 
 
 //add product. post/agregar--  
-server.post("/products", authMiddleware, async (request, response) => {
+server.post("/products", async (request, response) => {
     const body = request.body
 
     const { nombre, precio, stock, descripcion, categoria } = body
@@ -158,7 +159,7 @@ server.post("/products", authMiddleware, async (request, response) => {
 
     await newProduct.save()
 
-    response.json({ data: "agregando productos!" })
+    response.json({ newProduct })
 })
 
 //Método patch/modificar
