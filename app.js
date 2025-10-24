@@ -3,7 +3,6 @@ peticion fetch/users/3ej con el método PATCH(Actualizar), petición fetch/users
 //import index from 'index.html'
 //import home from 'views/home.html'
 import express from 'express'
-import fs from 'node:fs'
 import cors from "cors"
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
@@ -12,16 +11,9 @@ import mongoose from 'mongoose'
 
 
 
-
 const server = express()
 server.use(cors())
 server.use(express.json())
-
-
-//helper/util
-const products = JSON.parse(fs.readFileSync("./products.json"))
-const users = JSON.parse(fs.readFileSync("./users.json"))
-const writeDb = (path, data) => fs.writeFileSync(path, JSON.stringify(data))
 
 
 
@@ -48,10 +40,19 @@ const productSchema = new mongoose.Schema({
     versionKey: false
 })
 
+//Creación de esquema de Mongodb para usuarios
+const userSchema = new mongoose.Schema({
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true }
+}, {
+    versionKey: false
+})
+
+
 //Modelo es un objeto que nos da acceso a los métodos de mongoDb
 //findByIdUpdate()Es una función que existe en mongodb para encontrar un producto por su id y modificar
 const Product = mongoose.model("Product", productSchema)
-
+const User = mongoose.model("User", userSchema)
 
 const authMiddleware = (request, response, next) => {
     //Validar el token -> Validar la sesión
@@ -73,54 +74,47 @@ const authMiddleware = (request, response, next) => {
     next()
 }
 
-//endpoint para registrar un usuario
+//Agregar un usuario
 //Agregar un usuario en la db
 server.post("/auth/register", async (request, response) => {
     const body = request.body
 
-    const usuario = users.find(user => user.email === body.email)
+    const user = await User.findOne({ email: body.email })
 
-    if (usuario) {
+    if (user) {
         return response.status(400).json({ message: "El usuario ya existe en nuestra base de datos" })
     }
 
 
     const hash = await bcrypt.hash(body.password, 10)
 
-    const nuevoUsuario = {
-        id: crypto.randomUUID(),
+    const newUser = new User({
         email: body.email,
         password: hash
-    }
+    })
 
+    await newUser.save()
 
-    users.push(nuevoUsuario)
-    writeDb("./users.json", users)
-
-    response.json({ status: "Agregando usuario" })
+    response.json({ newUser })
 })
 
 //Creación de sesión -> una sesión me permite ingresar a los datos por cierto tiempo
 server.post("/auth/login", async (request, response) => {
     const body = request.body
-    const usuario = users.find(user => user.email === body.email)
 
-    if (!usuario) {
+    const user = await User.findOne({ email: body.email })
+
+    if (!user) {
         return response.status(401).json({ status: "Usuario no encontrado, credenciales inválidas" })
     }
 
-    const passwordValidada = await bcrypt.compare(body.password, usuario.password)
+    const passwordValidada = await bcrypt.compare(body.password, user.password)
     if (!passwordValidada) {
         return response.status(401).json({ status: "Usuario no encontrado, credenciales inválidas" })
     }
 
 
-    //CREAR UNA SESIÓN!!!
-
-    //1 - payload -> Información del usuario loggeado
-    //2 - clave secreta
-    //3 - Objeto de configuración
-    const token = jwt.sign({ id: usuario.id, email: usuario.email }, "CLAVE_SECRETA", { expiresIn: "1h" })
+    const token = jwt.sign({ id: user.id, email: user.email }, "CLAVE_SECRETA", { expiresIn: "1h" })
 
     response.json({ token })
 
@@ -128,15 +122,15 @@ server.post("/auth/login", async (request, response) => {
 
 
 // get product---
-server.get("/products", async (request, response) => {
-    const listOfProducts = await Product.find()
-    response.json(listOfProducts)
+server.get("/products", authMiddleware, async (request, response) => {
+    const products = await Product.find()
+    response.json(products)
 
 })
 
 
 //add product. post/agregar--  
-server.post("/products", async (request, response) => {
+server.post("/products", authMiddleware, async (request, response) => {
     const body = request.body
 
     const { nombre, precio, stock, descripcion, categoria } = body
@@ -167,7 +161,7 @@ server.post("/products", async (request, response) => {
 })
 
 //Método patch/modificar
-server.patch("/products/:id", async (request, response) => {
+server.patch("/products/:id", authMiddleware, async (request, response) => {
     const body = request.body
     const id = request.params.id
 
@@ -183,7 +177,7 @@ server.patch("/products/:id", async (request, response) => {
 })
 
 //Método delete/borrar
-server.delete("/products/:id", async (request, response) => {
+server.delete("/products/:id", authMiddleware, async (request, response) => {
     const id = request.params.id
 
     const deletedProduct = await Product.findByIdAndDelete(id)
