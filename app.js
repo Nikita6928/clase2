@@ -30,12 +30,12 @@ const connectDb = async () => {
 
 //Creación de esquema de Mongodb
 //Los datos que voy a agregar, están basados en estas validaciones
-const productSchema = new mongoose.Schema({
-    nombre: { type: String, required: true },
-    precio: { type: Number, default: 0 },
-    stock: { type: Number, required: true },
-    descripcion: { type: String },
-    categoria: { type: String, required: true }
+const travelSchema = new mongoose.Schema({
+    destination: { type: String, required: true },
+    price: { type: Number, default: 0 },
+    description: { type: String },
+    hotel: { type: String, required: true }
+
 }, {
     versionKey: false
 })
@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema({
 
 //Modelo es un objeto que nos da acceso a los métodos de mongoDb
 //findByIdUpdate()Es una función que existe en mongodb para encontrar un producto por su id y modificar
-const Product = mongoose.model("Product", productSchema)
+const Travel = mongoose.model("Travel", travelSchema)
 const User = mongoose.model("User", userSchema)
 
 const authMiddleware = (request, response, next) => {
@@ -122,71 +122,69 @@ server.post("/auth/login", async (request, response) => {
 
 
 // get product---
-server.get("/products", authMiddleware, async (request, response) => {
-    const products = await Product.find()
-    response.json(products)
+server.get("/travels", authMiddleware, async (request, response) => {
+    const travels = await Travel.find()
+    response.json(travels)
 
 })
 
 
 //add product. post/agregar--  
-server.post("/products", authMiddleware, async (request, response) => {
+server.post("/travels", authMiddleware, async (request, response) => {
     const body = request.body
 
-    const { nombre, precio, stock, descripcion, categoria } = body
+    const { destination, price, description, hotel } = body
 
     //Valido todo lo que necesito 
-    if (!nombre || !precio || !stock || !descripcion || !categoria) {
+    if (!destination || !price || !description || !hotel) {
         return response.status(400).json({ status: "Data invalida, intentando nuevamente" })
 
     }
 
-    const newProduct = new Product({
+    const newTravel = new Travel({
 
-        nombre,
-        precio,
+        destination,
+        price,
         stock,
-        descripcion,
-        categoria
+        description,
+        hotel
     })
 
-    //Validar si existe o no el producto
-    //Si existe el producto 400
+    //Validar si existe o no el destino
+    //Si existe el destino 400
     //Si no existe, lo agrego
 
 
-    await newProduct.save()
+    await newTravel.save()
 
-    response.json({ newProduct })
+    response.json({ newTravel })
 })
 
 //Método patch/modificar
-server.patch("/products/:id", authMiddleware, async (request, response) => {
+server.patch("/travels/:id", authMiddleware, async (request, response) => {
     const body = request.body
     const id = request.params.id
 
-    const updateProduct = await Product.findByIdAndUpdate(id, body, { new: true })
+    const updateTravel = await Product.findByIdAndUpdate(id, body, { new: true })
 
-    if (!updateProduct) {
-        return response.status(404).json({ error: "Producto no encontrado" })
+    if (!updateTravel) {
+        return response.status(404).json({ error: "Destino no encontrado" })
     }
-    response.json(updateProduct)
-
-    // response.json({ status: "Actualizando un producto!" })
+    response.json(updateTravel)
 
 })
 
 //Método delete/borrar
-server.delete("/products/:id", authMiddleware, async (request, response) => {
+server.delete("/travels/:id", authMiddleware, async (request, response) => {
     const id = request.params.id
 
-    const deletedProduct = await Product.findByIdAndDelete(id)
+    const deletedTravel = await Product.findByIdAndDelete(id)
 
-    if (!deletedProduct) {
-        return response.status(404).json({ error: "No se encuentra el producto para borrar" })
+    if (!deletedTravel) {
+        return response.status(404).json({ error: "No se encuentra el destino para borrar" })
     }
 
-    response.json({ deletedProduct })
+    response.json({ deletedTravel })
 })
 
 
