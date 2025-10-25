@@ -145,7 +145,6 @@ server.post("/travels", authMiddleware, async (request, response) => {
 
         destination,
         price,
-        stock,
         description,
         hotel
     })
